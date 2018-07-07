@@ -5,22 +5,18 @@
  */
 package main;
 
-import data.BinarySearchTree;
-import data.TreeNode;
-import data.Words;
+import data.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.awt.event.*;
+import java.io.*;
+import java.util.*;
 import javax.swing.*;
 
 /**
  *
  * @author SONPH
  */
-public class Translate extends JFrame {
+public final class Translate extends JFrame {
 
     BinarySearchTree<Words> viLang = new BinarySearchTree<>();
     BinarySearchTree<Words> enLang = new BinarySearchTree<>();
@@ -68,6 +64,29 @@ public class Translate extends JFrame {
                 }
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void saveResource() {
+        try {
+            FileWriter fw = new FileWriter(fileName);
+            BufferedWriter bw = new BufferedWriter(fw);
+            Queue<TreeNode<Words>> queue = this.viLang.getPreOrderList();
+            while (!queue.isEmpty()) {                
+                TreeNode<Words> node = queue.poll();
+                String key = node.getKey().getWord();
+                bw.write(key + ":"); bw.newLine();
+                LinkedList<String> mean = node.getKey().getMeanlist();
+                for (String e : mean) {
+                    if (e != null) {
+                        bw.write(e + ","); bw.newLine();
+                    }
+                }
+            }
+            bw.close();
+            fw.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -224,12 +243,18 @@ public class Translate extends JFrame {
         this.bottomPanel.add(this.btnEdit);
         // add action Listioner
         this.btnEdit.addActionListener(this::btnEditActionPerformed);
-
+        
         this.btnSave = new JButton("Save");
         this.btnSave.setPreferredSize(new Dimension(100, 40));
         this.bottomPanel.add(this.btnSave);
         // add action Listioner
         this.btnSave.addActionListener(this::btnSaveActionPerformed);
+        
+        this.btnDelete = new JButton("Delete");
+        this.btnDelete.setPreferredSize(new Dimension(100, 40));
+        this.bottomPanel.add(this.btnDelete);
+        //add action listioner
+        this.btnDelete.addActionListener(this::btnDeleteActionPerformed);
 
         ///////////////////////////////////////
         Container container = getContentPane();
@@ -306,7 +331,7 @@ public class Translate extends JFrame {
         } else {
             this.txtTranslateContent.setText("");
             int request = JOptionPane.showConfirmDialog(this, "\"" + leftWord + "\"" + " doesn't"
-                    + " have meaning! Woud you like add a mean for this word?",
+                    + " have meaning! Woud you like add new mean for this word?",
                     "Meaing?", JOptionPane.YES_NO_OPTION);
             if (request == JOptionPane.YES_OPTION) {
                 btnEditActionPerformed(null);
@@ -325,51 +350,104 @@ public class Translate extends JFrame {
         this.addNew = true;
         showOrHideSavebtn();
     }
-
+    
     void btnSaveActionPerformed(ActionEvent evt) {
         String leftWord = this.txtContent.getText().trim();
         String rightWord = this.txtTranslateContent.getText().trim();
-        
+
         if (leftWord.isEmpty() || rightWord.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please enter the word!");
             return;
         }
-        
+
         String[] mean = rightWord.split("[,]+");
-        BinarySearchTree<Words> tree;
-        if (this.EnToVi) {
-            tree = this.enLang;
-        } else {
-            tree = this.viLang;
-        }
-        Words key = new Words(leftWord);
-        TreeNode<Words> node = tree.search(key);
 
         if (this.addNew) {
-            if (node == null) { // this is a new word
-                for (String e : mean) {
-                    key.setMean(e.trim());
-                }
-                tree.insert(key);
-                //System.out.println("New");
-            } else {
-                //System.out.println("Old");
-                for (String e : mean) {
-                    int flag = 0;
-                    for (int j = 0; j < node.getKey().getMeanlist().size(); j++) {
-                        if (e.trim().equalsIgnoreCase(node.getKey().getMeanlist().get(j))) {
-                            flag++;
-                        }
-                    }
-                    if (flag == 0) {
-                        node.getKey().setMean(e.trim());
-                    }
-                }
+            for (String e : mean) {
+                addToDictionary(leftWord, e.trim(), this.EnToVi);
+                addToDictionary(e.trim(), leftWord, !this.EnToVi);
             }
         }
         JOptionPane.showMessageDialog(this, "Added successfull!");
         this.addNew = false;
         showOrHideSavebtn();
+        saveResource();
+    }
+
+    void addToDictionary(String word, String mean, boolean curEntoVi) {
+        BinarySearchTree<Words> tree;
+        if (curEntoVi) {
+            tree = this.enLang;
+        } else {
+            tree = this.viLang;
+        }
+        Words key = new Words(word);
+        TreeNode<Words> node = tree.search(key);
+        if (this.addNew) {
+            if (node == null) {
+                key.setMean(mean);
+                tree.insert(key);
+            } else {
+                LinkedList<String> listMean = node.getKey().getMeanlist();
+                int flag = 0;
+                for (int i = 0; i < listMean.size(); i++) {
+                    if (mean.equals(listMean.get(i))) {
+                        flag++;
+                        break;
+                    }
+                }
+                if (flag == 0) {
+                    node.getKey().setMean(mean);
+                }
+            }
+        }
+    }
+    
+    void btnDeleteActionPerformed(ActionEvent evt) {
+        String leftWord = this.txtContent.getText().trim();
+        if (hasInTree(leftWord)) {
+            int request = JOptionPane.showConfirmDialog(this, "Do you want to "
+                    + "delete this word?", "Delete?", JOptionPane.YES_NO_OPTION);
+            if (request == JOptionPane.YES_OPTION) {
+                Words key = new Words(leftWord);
+                LinkedList<String> meanList = key.getMeanlist();
+                meanList.stream().map((e) -> new Words(e)).forEachOrdered((a) -> {
+                    deleteWord(a, !this.EnToVi);
+                });
+                deleteWord(key, this.EnToVi);
+                JOptionPane.showMessageDialog(this, "Delete successfull!");
+            }
+        } else {
+            int request = JOptionPane.showConfirmDialog(this, "This word \"" + leftWord + "\" "
+                    + "does not have in the database, Would you like to add new "
+                    + "mean?", "Mean?", JOptionPane.YES_NO_OPTION);
+            if(request == JOptionPane.YES_OPTION) {
+                btnEditActionPerformed(null);
+                this.txtTranslateContent.requestFocus();
+            } else {
+                this.txtContent.requestFocus();
+            }
+        }
+        saveResource();
+    }
+    
+    void deleteWord(Words key, boolean curEntoVi) {
+        if (curEntoVi) {
+            enLang.delete(key);
+        } else {
+            viLang.delete(key);
+        }
+    }
+    
+    boolean hasInTree(String word) {
+        Words key = new Words(word);
+        BinarySearchTree<Words> tree;
+        
+        if (this.EnToVi) tree = enLang;
+        else tree = viLang;
+        
+        TreeNode<Words> node = tree.search(key);
+        return node != null;
     }
 
     void showOrHideSavebtn() {
@@ -413,10 +491,11 @@ public class Translate extends JFrame {
     JButton btnTranslate;
     JButton btnEdit;
     JButton btnSave;
+    JButton btnDelete;
     // Text area
     JTextArea txtContent;
     JTextArea txtTranslateContent;
     // Label
     // Combo Box
-    JComboBox<String> cmbLanguage;
+    //JComboBox<String> cmbLanguage;
 }

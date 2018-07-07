@@ -5,6 +5,9 @@
  */
 package data;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  *
  * @author SONPH
@@ -111,5 +114,59 @@ public class BinarySearchTree<E extends Comparable<? super E>> {
     public TreeNode<E> search(E key) {
         return search(root, key);
     }
+    
+    private Queue<TreeNode<E>> preOrderList = new LinkedList<>();
 
+    public Queue<TreeNode<E>> getPreOrderList() {
+        preorder();
+        return preOrderList;
+    }
+    
+    public void preorder(TreeNode<E> p) {
+        if (p != null) {
+            this.preOrderList.offer(p);
+            preorder(p.left);
+            preorder(p.right);
+        }
+    }
+
+    public void preorder() {
+        preorder(root);
+    }
+    
+    public void delete(E key) {
+        this.root = delete(this.root, key);
+    }
+
+    public TreeNode<E> delete(TreeNode<E> root, E key) {
+        if (root == null) {
+            return root;
+        }
+
+        if (key.compareTo(root.key) < 0) {
+            root.left = delete(root.left, key);
+        } else if (key.compareTo(root.key) > 0) {
+            root.right = delete(root.right, key);
+        } else {
+            if (root.left == null) {
+                return root.right;
+            } else if (root.right == null) {
+                return root.left;
+            }
+            root.key = (E)minValue(root.right);
+            
+            root.right = delete(root.right, root.key);
+        }
+        
+        return root;
+    }
+
+    E minValue(TreeNode<E> root) {
+        E minv = root.key;
+        while (root.left != null) {
+            minv = (E)root.left.key;
+            root = root.left;
+        }
+        return minv;
+    }
 }
