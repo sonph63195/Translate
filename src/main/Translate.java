@@ -18,6 +18,13 @@ import javax.swing.*;
  */
 public final class Translate extends JFrame {
 
+    private static final long serialVersionUID = 1L;
+    /**
+     *
+     */
+
+    private static final String NULL = "null";
+
     BinarySearchTree<Words> viLang = new BinarySearchTree<>();
     BinarySearchTree<Words> enLang = new BinarySearchTree<>();
 
@@ -25,15 +32,20 @@ public final class Translate extends JFrame {
     Words curEnWord;
 
     String fileName = "data.txt";
+    String settingsData = "settings.ini";
 
-    boolean EnToVi = true;
+    boolean EnToVi;
     boolean addNew = false;
 
     public Translate() throws HeadlessException {
         initComponents();
+        loadSettings();
+        showOrHideSavebtn();
         translateLanguage();
         loadResouce();
-        showOrHideSavebtn();
+//        enLang.breadthFirst();
+//        System.out.println("-----");
+//        viLang.breadthFirst();
     }
 
     /**
@@ -44,51 +56,93 @@ public final class Translate extends JFrame {
             FileReader fr = new FileReader(fileName);
             BufferedReader br = new BufferedReader(fr);
             String line;
+            int flag = 0;
             while ((line = br.readLine()) != null) {
-                boolean isVi = line.charAt(line.length() - 1) == ':';
+                //boolean isVi = line.charAt(line.length() - 1) == ':';
                 String[] wordRead = line.split("[:,]+");
-                if (isVi) {
-                    curViWord = new Words(wordRead[0]);
+                //check first character in utf-8
+                if (flag == 0) {
+                    String[] split = wordRead[0].split("\\W");
+                    wordRead[0] = "";
+                    for (int i = 1; i < split.length; i++) {
+                        wordRead[0] += split[i]; 
+                        if (i < split.length - 1) {
+                            wordRead[0] += " ";
+                        }
+                    }
+                    System.out.println(wordRead[0]);
+                } 
+                //insert to tree
+                for (int i = 0; i < wordRead.length; i++) {
+                    if (i == 0) {
+                        curViWord = new Words(wordRead[0]);
+                    } else {
+                        curViWord.setMean(wordRead[i]);
+                        //set for en lang
+                        curEnWord = new Words(wordRead[i]);
+                        TreeNode<Words> node = enLang.search(curEnWord);
+                        if (node == null) {
+                            curEnWord.setMean(wordRead[0]);
+                            enLang.insert(curEnWord);
+                        } else {
+                            node.getKey().setMean(wordRead[0]);
+                        }
+                    }
                     viLang.insert(curViWord);
-                } else {
-                    curEnWord = new Words(wordRead[0]);
-
-                    // set mean vi for en
-                    curEnWord.setMean(curViWord.getWord());
-                    // insert word for the tree
-                    enLang.insert(curEnWord);
-
-                    //set mean en for vi
-                    viLang.search(curViWord).getKey().setMean(curEnWord.getWord());
-
+                    flag++;
                 }
             }
+            br.close();
+            fr.close();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     private void saveResource() {
         try {
             FileWriter fw = new FileWriter(fileName);
             BufferedWriter bw = new BufferedWriter(fw);
             Queue<TreeNode<Words>> queue = this.viLang.getPreOrderList();
-            while (!queue.isEmpty()) {                
+            while (!queue.isEmpty()) {
                 TreeNode<Words> node = queue.poll();
                 String key = node.getKey().getWord();
-                bw.write(key + ":"); bw.newLine();
+                bw.write(key + ":");
+                //bw.newLine();
                 LinkedList<String> mean = node.getKey().getMeanlist();
                 for (String e : mean) {
                     if (e != null) {
-                        bw.write(e + ","); bw.newLine();
+                        bw.write(e + ",");
+                        //bw.newLine();
                     }
                 }
+                bw.newLine();
             }
             bw.close();
             fw.close();
+
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void loadSettings() {
+        try {
+            FileReader fr = new FileReader(settingsData);
+            BufferedReader br = new BufferedReader(fr);
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] lineRead = line.split("=");
+                if (lineRead[0].trim().equalsIgnoreCase("enTovi")) {
+                    if (lineRead[1].trim().equalsIgnoreCase("true")) {
+                        this.EnToVi = true;
+                    } else {
+                        this.EnToVi = false;
+                    }
+                }
+            }
+        } catch (Exception e) {
         }
     }
 
@@ -243,18 +297,18 @@ public final class Translate extends JFrame {
         this.bottomPanel.add(this.btnEdit);
         // add action Listioner
         this.btnEdit.addActionListener(this::btnEditActionPerformed);
-        
+
         this.btnSave = new JButton("Save");
         this.btnSave.setPreferredSize(new Dimension(100, 40));
         this.bottomPanel.add(this.btnSave);
         // add action Listioner
         this.btnSave.addActionListener(this::btnSaveActionPerformed);
-        
-        this.btnDelete = new JButton("Delete");
-        this.btnDelete.setPreferredSize(new Dimension(100, 40));
-        this.bottomPanel.add(this.btnDelete);
-        //add action listioner
-        this.btnDelete.addActionListener(this::btnDeleteActionPerformed);
+
+//        this.btnDelete = new JButton("Delete");
+//        this.btnDelete.setPreferredSize(new Dimension(100, 40));
+//        this.bottomPanel.add(this.btnDelete);
+//        //add action listioner
+//        this.btnDelete.addActionListener(this::btnDeleteActionPerformed);
 
         ///////////////////////////////////////
         Container container = getContentPane();
@@ -350,7 +404,7 @@ public final class Translate extends JFrame {
         this.addNew = true;
         showOrHideSavebtn();
     }
-    
+
     void btnSaveActionPerformed(ActionEvent evt) {
         String leftWord = this.txtContent.getText().trim();
         String rightWord = this.txtTranslateContent.getText().trim();
@@ -389,39 +443,44 @@ public final class Translate extends JFrame {
                 tree.insert(key);
             } else {
                 LinkedList<String> listMean = node.getKey().getMeanlist();
-                int flag = 0;
                 for (int i = 0; i < listMean.size(); i++) {
                     if (mean.equals(listMean.get(i))) {
-                        flag++;
-                        break;
+                        return;
                     }
                 }
-                if (flag == 0) {
-                    node.getKey().setMean(mean);
-                }
+                node.getKey().setMean(mean);
             }
         }
     }
-    
+
     void btnDeleteActionPerformed(ActionEvent evt) {
         String leftWord = this.txtContent.getText().trim();
-        if (hasInTree(leftWord)) {
+        if (hasInTree(leftWord, this.EnToVi)) {
             int request = JOptionPane.showConfirmDialog(this, "Do you want to "
                     + "delete this word?", "Delete?", JOptionPane.YES_NO_OPTION);
             if (request == JOptionPane.YES_OPTION) {
-                Words key = new Words(leftWord);
-                LinkedList<String> meanList = key.getMeanlist();
-                meanList.stream().map((e) -> new Words(e)).forEachOrdered((a) -> {
-                    deleteWord(a, !this.EnToVi);
-                });
-                deleteWord(key, this.EnToVi);
-                JOptionPane.showMessageDialog(this, "Delete successfull!");
+                Words key = new Words(leftWord.trim());
+                TreeNode<Words> node = findNode(key, EnToVi);
+
+                if (node != null) {
+                    LinkedList<String> meanList = node.getKey().getMeanlist();
+                    meanList.stream()
+                            .map((e) -> new Words(e))
+                            //.forEach((e) -> deleteWord(e, this.EnToVi))
+                            //.filter((String e) -> !e.isEmpty())
+
+                            .forEach((e) -> deleteWord(e, !EnToVi));
+                    deleteWord(node.getKey(), this.EnToVi);
+                } else {
+                    System.out.println("Node is null");
+                }
+                //JOptionPane.showMessageDialog(this, "Delete successfull!");
             }
         } else {
             int request = JOptionPane.showConfirmDialog(this, "This word \"" + leftWord + "\" "
                     + "does not have in the database, Would you like to add new "
                     + "mean?", "Mean?", JOptionPane.YES_NO_OPTION);
-            if(request == JOptionPane.YES_OPTION) {
+            if (request == JOptionPane.YES_OPTION) {
                 btnEditActionPerformed(null);
                 this.txtTranslateContent.requestFocus();
             } else {
@@ -430,7 +489,7 @@ public final class Translate extends JFrame {
         }
         saveResource();
     }
-    
+
     void deleteWord(Words key, boolean curEntoVi) {
         if (curEntoVi) {
             enLang.delete(key);
@@ -438,14 +497,25 @@ public final class Translate extends JFrame {
             viLang.delete(key);
         }
     }
-    
-    boolean hasInTree(String word) {
+
+    TreeNode<Words> findNode(Words key, boolean curEnToVi) {
+        if (curEnToVi) {
+            return enLang.search(key);
+        } else {
+            return viLang.search(key);
+        }
+    }
+
+    boolean hasInTree(String word, boolean curEntoVi) {
         Words key = new Words(word);
         BinarySearchTree<Words> tree;
-        
-        if (this.EnToVi) tree = enLang;
-        else tree = viLang;
-        
+
+        if (curEntoVi) {
+            tree = enLang;
+        } else {
+            tree = viLang;
+        }
+
         TreeNode<Words> node = tree.search(key);
         return node != null;
     }
@@ -461,7 +531,6 @@ public final class Translate extends JFrame {
     void txtContentKeyPressed(KeyEvent evt) {
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             btnTranslateActionPerformed(null);
-            System.out.println("Pressed");
         }
     }
 

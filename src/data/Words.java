@@ -5,6 +5,7 @@
  */
 package data;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -22,11 +23,12 @@ public class Words implements Comparable<Words> {
     }
 
     public Words(String word) {
-        this(word, null);
+        this();
+        this.word = word;
     }
 
     public Words(String word, String mean) {
-        this.meanList = new LinkedList<>();
+        this();
         this.word = word;
         this.meanList.add(mean);
     }
@@ -47,18 +49,15 @@ public class Words implements Comparable<Words> {
         String result = "";
         int count = 0;
         for (String e : meanList) {
-            if (e != null) {
-                result += e;
-                count++;
-                if (count < meanList.size() - 1) {
-                    result += ", ";
-                }
+            result += e;
+            count++;
+            if (count < meanList.size()) {
+                result += ", ";
             }
         }
-        //result = meanList.stream().map((e) -> e + ", ").reduce(result, String::concat);
         return result;
     }
-    
+
     public LinkedList<String> getMeanlist() {
         return this.meanList;
     }
@@ -70,7 +69,7 @@ public class Words implements Comparable<Words> {
 
     @Override
     public int compareTo(Words other) {
-        return this.word.compareTo(other.getWord());
+        return this.word.toLowerCase().compareTo(other.getWord().toLowerCase());
     }
 
 }

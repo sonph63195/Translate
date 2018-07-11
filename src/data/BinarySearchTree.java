@@ -169,4 +169,20 @@ public class BinarySearchTree<E extends Comparable<? super E>> {
         }
         return minv;
     }
+    
+    public void breadthFirst() {
+        TreeNode<E> p = this.root;
+        Queue<TreeNode<E>> queue = new LinkedList();
+        queue.offer(p);
+        while (!queue.isEmpty()) {
+            p = queue.poll();
+            visit(p);
+            if (p.left != null) {
+                queue.offer(p.left);
+            }
+            if (p.right != null) {
+                queue.offer(p.right);
+            }
+        }
+    }
 }

@@ -1,113 +1,13 @@
-quả táo:
-apple,
-Chào:
-Hi,
-Ai:
-Who,
-who,
-Bạn:
-You,
-Anh đấy:
-He,
-Anh ta:
-He,
-Bà đấy:
-She,
-Bóng:
-Ball,
-Bác sĩ:
-Doctor,
-Bất kể:
-Any,
-chào:
-hi,
-Quả táo:
-Apple,
-Phạm Hoàng Sơn:
-Fan Huangshan,
-Hoàng Sơn:
-Huangshan,
-Cái gì:
-What,
-what,
-Chú đấy:
-He,
-Chị đấy:
-She,
-Chơi:
-Play,
-Con Rồng:
-Dragon,
-Con rồng:
-Dragon,
-Con mèo:
-Cat,
-Con chó:
-Dog,
-Của tôi:
-My,
-Có:
-Yes,
-Của bạn:
-Your,
-Cô đấy:
-She,
-Dạ:
-Yes,
-Em đấy:
-He,
-She,
-Giờ:
-Time,
-Làm thế nào:
-How,
-how,
-Khi nào:
-When,
-when,
-Họ:
-They,
-Không:
-No,
-Not,
-None,
-Kỹ sư:
-Engineer,
-Nó:
-He,
-It,
-She,
-Mọi lúc:
-Anytime,
-Mọi ngày:
-Anyday,
-Những con mèo:
-Cats,
-Xin chào:
-Hi,
-Trái táo:
-Apple,
-Thằng đấy:
-He,
-Rồng:
-Dragon,
-Thời gian:
-Time,
-Táo:
-Apple,
-Tại sao:
-Why,
-why,
-Tôi:
-I,
-Me,
-Vâng:
-Yes,
-của anh ấy:
-his,
-trái táo:
-apple,
-táo:
-apple,
-tốt:
-good,
+﻿ba:three
+quả táo:apple,an apple,
+Cái gì:What,
+con chó đẻ:dog,doggy,
+chào:hi,hello,
+con mèo:cat,
+gì:what,
+xin chào:hello,hi,
+tôi:I,me,
+trái táo:apple,
+tại sao:why,
+vì sao:why,
+tại vì sao:why,
