@@ -1,4 +1,3 @@
-[![Downloads][downloads-img]][plugin]
 # Translate
 This is Translate java application desktop
 
