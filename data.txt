@@ -1,7 +1,6 @@
 ﻿ba:three
 quả táo:apple,an apple,
 Cái gì:What,
-con chó đẻ:dog,doggy,
 chào:hi,hello,
 con mèo:cat,
 gì:what,
