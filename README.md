@@ -1,7 +1,7 @@
 # Translate
-This is Translate java application desktop
+This is a desktop application written in Java.
 
-Vietnamese - English
+Vietnamese - English.
 
 # Features
 Translate Vietnamese into English and English into Vietnamese
